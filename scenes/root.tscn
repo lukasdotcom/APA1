@@ -1,10 +1,27 @@
-[gd_scene load_steps=2 format=3 uid="uid://dakmpo7l47qe"]
+[gd_scene load_steps=5 format=3 uid="uid://dakmpo7l47qe"]
 
 [ext_resource type="PackedScene" uid="uid://ul4ge3b2f2aa" path="res://scenes/car.tscn" id="1_183sc"]
+[ext_resource type="Script" path="res://scenes/Label.gd" id="2_b7ty4"]
+
+[sub_resource type="SystemFont" id="SystemFont_ko7rt"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_rdfiy"]
+font = SubResource("SystemFont_ko7rt")
+font_size = 599
 
 [node name="root" type="Node2D"]
 
 [node name="car" parent="." instance=ExtResource("1_183sc")]
+unique_name_in_owner = true
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(0.085, 0.085)
+
+[node name="Label" type="Label" parent="."]
+offset_left = 3687.0
+offset_top = 1992.0
+offset_right = 5741.0
+offset_bottom = 3091.0
+text = "DRIVE"
+label_settings = SubResource("LabelSettings_rdfiy")
+script = ExtResource("2_b7ty4")
