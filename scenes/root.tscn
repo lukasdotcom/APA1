@@ -1,0 +1,67 @@
+[gd_scene load_steps=10 format=3 uid="uid://dakmpo7l47qe"]
+
+[ext_resource type="PackedScene" uid="uid://ul4ge3b2f2aa" path="res://scenes/car.tscn" id="1_183sc"]
+[ext_resource type="Script" path="res://scenes/Label.gd" id="2_b7ty4"]
+[ext_resource type="Script" path="res://scenes/spaces.gd" id="3_1l3ww"]
+[ext_resource type="Script" path="res://scenes/speed_label.gd" id="3_elfu8"]
+[ext_resource type="PackedScene" uid="uid://bpw78he04fog2" path="res://scenes/hmi.tscn" id="4_xurto"]
+[ext_resource type="Script" path="res://scenes/Line2D.gd" id="5_egihb"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_qxjky"]
+font_size = 512
+
+[sub_resource type="SystemFont" id="SystemFont_ko7rt"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_rdfiy"]
+font = SubResource("SystemFont_ko7rt")
+font_size = 599
+
+[node name="root" type="Node2D"]
+
+[node name="camera" type="Camera2D" parent="."]
+zoom = Vector2(0.1, 0.1)
+
+[node name="spaces" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_1l3ww")
+
+[node name="car" parent="." instance=ExtResource("1_183sc")]
+unique_name_in_owner = true
+
+[node name="speed_label" type="Label" parent="."]
+offset_left = -5000.0
+offset_top = 1400.0
+offset_right = -3110.0
+offset_bottom = 2098.0
+text = "50 MPH"
+label_settings = SubResource("LabelSettings_qxjky")
+script = ExtResource("3_elfu8")
+
+[node name="gear_label" type="Label" parent="."]
+offset_left = -5000.0
+offset_top = 1992.0
+offset_right = -2946.0
+offset_bottom = 3091.0
+text = "DRIVE"
+label_settings = SubResource("LabelSettings_rdfiy")
+script = ExtResource("2_b7ty4")
+
+[node name="hmi" parent="." instance=ExtResource("4_xurto")]
+z_index = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 1760.0
+offset_top = 240.0
+offset_right = 5760.0
+offset_bottom = 3240.0
+
+[node name="view" type="Line2D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("5_egihb")
+
+[connection signal="execute_park" from="spaces" to="car" method="_on_spaces_execute_park"]
+[connection signal="find_spots" from="hmi" to="spaces" method="_on_hmi_find_spots"]
+[connection signal="reset_spots" from="hmi" to="spaces" method="_on_hmi_reset_spots"]
