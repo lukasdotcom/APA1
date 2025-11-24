@@ -1,9 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://cy8cyqqywvpxa"]
+[gd_scene load_steps=2 format=3 uid="uid://cy8cyqqywvpxa"]
 
 [ext_resource type="Script" path="res://scenes/space.gd" id="1_b0yvr"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_kjjnk"]
-size = Vector2(520, 1000)
 
 [node name="space" type="Node2D"]
 script = ExtResource("1_b0yvr")
@@ -23,15 +20,18 @@ points = PackedVector2Array(260, -500, -260, -500)
 width = 40.0
 default_color = Color(1, 1, 0, 1)
 
+[node name="line4" type="Line2D" parent="."]
+points = PackedVector2Array(260, 650, -260, 650)
+width = 20.0
+default_color = Color(1, 1, 0, 1)
+
+[node name="line5" type="Line2D" parent="."]
+points = PackedVector2Array(260, -650, -260, -650)
+width = 20.0
+default_color = Color(1, 1, 0, 1)
+
 [node name="outline" type="Line2D" parent="."]
 points = PackedVector2Array(-250, -515, -250, 500, 250, 500, 250, -515)
 closed = true
 width = 20.0
 default_color = Color(1, 0, 0, 0)
-
-[node name="button" type="Area2D" parent="."]
-
-[node name="hitbox" type="CollisionShape2D" parent="button"]
-shape = SubResource("RectangleShape2D_kjjnk")
-
-[connection signal="input_event" from="button" to="." method="_on_button_input_event"]

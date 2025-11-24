@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://ul4ge3b2f2aa"]
+[gd_scene load_steps=5 format=3 uid="uid://ul4ge3b2f2aa"]
 
 [ext_resource type="Script" path="res://scenes/car.gd" id="1_yyv3g"]
 [ext_resource type="Texture2D" uid="uid://b1t4kwhetct1j" path="res://images/car.png" id="2_01dmk"]
@@ -6,6 +6,10 @@
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_lv41n"]
 radius = 151.0
 height = 758.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_cqb1d"]
+radius = 234.0
+height = 1048.0
 
 [node name="car" type="CharacterBody2D"]
 script = ExtResource("1_yyv3g")
@@ -15,3 +19,11 @@ texture = ExtResource("2_01dmk")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CapsuleShape2D_lv41n")
+
+[node name="sensors" type="Area2D" parent="."]
+
+[node name="sensor_range" type="CollisionShape2D" parent="sensors"]
+shape = SubResource("CapsuleShape2D_cqb1d")
+
+[connection signal="body_entered" from="sensors" to="." method="_on_sensors_body_entered"]
+[connection signal="body_exited" from="sensors" to="." method="_on_sensors_body_exited"]

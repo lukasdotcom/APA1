@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://cl3pcyf7ori5s"]
+
+[ext_resource type="Script" path="res://other_car.gd" id="1_p8hvn"]
+[ext_resource type="Texture2D" uid="uid://b1t4kwhetct1j" path="res://images/car.png" id="2_r7exq"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_sjb6n"]
+radius = 174.0
+height = 810.0
+
+[node name="other_car" type="CharacterBody2D"]
+script = ExtResource("1_p8hvn")
+
+[node name="sprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_r7exq")
+
+[node name="hitbox" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_sjb6n")
+
+[node name="timer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
+
+[connection signal="timeout" from="timer" to="." method="_on_timer_timeout"]

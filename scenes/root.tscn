@@ -18,6 +18,11 @@ font_size = 599
 
 [node name="root" type="Node2D"]
 
+[node name="boundaries" type="StaticBody2D" parent="."]
+
+[node name="hitbox" type="CollisionPolygon2D" parent="boundaries"]
+polygon = PackedVector2Array(-5760, -3240, -5760, 3240, 5760, 3240, 5760, -3240, -5759, -3240, -5759, -3300, 5800, -3300, 5800, 3300, -5800, 3300, -5800, -3300, -5760, -3300, -5760, -3240)
+
 [node name="camera" type="Camera2D" parent="."]
 zoom = Vector2(0.1, 0.1)
 
@@ -25,28 +30,41 @@ zoom = Vector2(0.1, 0.1)
 unique_name_in_owner = true
 script = ExtResource("3_1l3ww")
 
+[node name="cars" type="Node" parent="."]
+
 [node name="car" parent="." instance=ExtResource("1_183sc")]
 unique_name_in_owner = true
 
 [node name="speed_label" type="Label" parent="."]
-offset_left = -5000.0
-offset_top = 1400.0
-offset_right = -3110.0
-offset_bottom = 2098.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -945.0
+offset_top = -2500.0
+offset_right = 945.0
+offset_bottom = -1802.0
+grow_horizontal = 2
 text = "50 MPH"
 label_settings = SubResource("LabelSettings_qxjky")
+horizontal_alignment = 1
 script = ExtResource("3_elfu8")
 
 [node name="gear_label" type="Label" parent="."]
-offset_left = -5000.0
-offset_top = 1992.0
-offset_right = -2946.0
-offset_bottom = 3091.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -856.5
+offset_top = -3250.0
+offset_right = 856.5
+offset_bottom = -2433.0
+grow_horizontal = 2
 text = "DRIVE"
 label_settings = SubResource("LabelSettings_rdfiy")
+horizontal_alignment = 1
 script = ExtResource("2_b7ty4")
 
 [node name="hmi" parent="." instance=ExtResource("4_xurto")]
+visible = false
 z_index = 1
 anchors_preset = 8
 anchor_left = 0.5

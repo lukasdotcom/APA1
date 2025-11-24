@@ -9,21 +9,42 @@ var rotation_speed : int = 1
 var gear : int = 0
 
 var path : Array = []
+var nearby_cars : Array = []
 	
 func _physics_process(delta):
 	if path != []:
-		if Input.is_action_pressed("down"):
+		if len(self.nearby_cars) > 0:
+			path = []
+			%spaces.reset()
+			%view.points = []
+			self.max_speed = 5000
+			self.speed = 0
+			self.gear = 1
+			$"../hmi".collision()
+		elif Input.is_action_just_pressed("q"):
+			path = []
+			%spaces.reset()
+			%view.points = []
+			self.max_speed = 5000
+			self.speed *= -1
+			$"../hmi".toggle()
+		elif Input.is_action_pressed("down"):
 			self.max_speed *= .98
-		if Input.is_action_just_pressed("left") or Input.is_action_just_pressed("right") or  is_zero_approx(self.max_speed):
+		elif (Input.is_action_just_pressed("left") or Input.is_action_just_pressed("right") 
+		or Input.is_action_just_pressed("up") or is_zero_approx(self.max_speed)):
 				path = []
 				%spaces.reset()
-				self.gear = 1
 				%view.points = []
 				self.max_speed = 5000
+				self.speed *= -1
+				$"../hmi".reset()
 		else:
-			gear = 0
+			gear = 2
 			follow_path(delta, self.max_speed)
 	else:
+		if Input.is_action_just_pressed("q"):
+			$"../hmi".toggle()
+
 		movement(delta)
 
 func _process(delta):
@@ -73,45 +94,83 @@ func movement(delta):
 ## @param space space to build a path to
 func build_path(space):
 	var new_path = []
-	var staging_pos = Vector2(space.global_position.x, space.global_position.y)
-	var destination = Vector2.ZERO
-	
-	# Pre-park position to find first
-	# Small offset point added to correct rotation
-	if space.global_position.x > self.global_position.x:
-		staging_pos.x -= 1500
-		destination = Vector2(space.global_position.x - 10, space.global_position.y)
-		new_path = [space.global_position, destination]
-	else:
-		staging_pos.x += 1500
-		destination = Vector2(space.global_position.x + 10, space.global_position.y)
-		new_path = [space.global_position, destination]
+	if space.type == 'parallel':
+		var staging_pos = Vector2(space.global_position.x, space.global_position.y)
+		var destination = Vector2.ZERO
+		var pull_forward = space.global_position
+		var direction = Vector2.UP.rotated(%car.rotation)
+		
+		# Pre-park position to find first
+		# Small offset point added to correct rotation
+		if direction.dot(Vector2.LEFT) > 0:
+			staging_pos.x -= 250
+			pull_forward.x = space.global_position.x + 250
+			destination = Vector2(pull_forward.x - 10, pull_forward.y)
+			new_path = [space.global_position, pull_forward, destination]
+		else:
+			staging_pos.x += 250
+			pull_forward.x = space.global_position.x - 250
+			destination = Vector2(pull_forward.x + 10, pull_forward.y)
+			new_path = [space.global_position, pull_forward, destination]
 
-	if space.global_position.y < self.global_position.y:
-		staging_pos.y += 500
+		# Parallel spaces are always below car
+		staging_pos.y -= 250
+		
+		# Add first curve
+		var midpoint
+		for i in range(21):
+			var output = bezier(destination, staging_pos, "up", Vector2.ZERO, i / 20.0)
+			midpoint = output[1]
+			new_path.append(output[0])
+		
+		new_path.append(staging_pos)
+		
+		var pre_park = Vector2.ZERO
+		if direction.dot(Vector2.LEFT) < 0:
+			pre_park = Vector2(space.global_position.x + 1500, space.global_position.y - 500)
+		else:
+			pre_park = Vector2(space.global_position.x - 1500, space.global_position.y - 500)
+	
+		# Second curve
+		# Calculate tangent midpoint for smoother curve junction
+		var tangent = 2 * staging_pos - midpoint
+		for i in range(21):
+			var output = bezier(staging_pos, pre_park, "down", tangent, i / 20.0)
+			new_path.append(output[0])
+		
+		new_path.append(pre_park)
 	else:
-		staging_pos.y -= 500
+		var staging_pos = Vector2(space.global_position.x, space.global_position.y)
+		var destination = Vector2.ZERO
 	
-	# Add first curve
-	var midpoint
-	for i in range(21):
-		var output = bezier(destination, staging_pos, "up", Vector2.ZERO, i / 20.0)
-		midpoint = output[1]
-		new_path.append(output[0])
-	
-	new_path.append(staging_pos)
-	
-	# Second curve
-	# Calculate tangent midpoint for smoother curve junction
-	var tangent = 2 * staging_pos - midpoint
-	for i in range(21):
-		var output = bezier(staging_pos, self.global_position, "down", tangent, i / 20.0)
-		new_path.append(output[0])
-	
-	
+		# Pre-park position to find first
+		# Small offset point added to correct rotation
+		if space.global_position.x > self.global_position.x:
+			staging_pos.x -= 1000
+			destination = Vector2(space.global_position.x - 10, space.global_position.y)
+			new_path = [space.global_position, destination]
+		else:
+			staging_pos.x += 1000
+			destination = Vector2(space.global_position.x + 10, space.global_position.y)
+			new_path = [space.global_position, destination]
+
+		# Get vertical offset based on car direction
+		var direction = Vector2.UP.rotated(self.rotation)
+		if direction.dot(Vector2.UP) > 0:
+			staging_pos.y -= 500
+		else:
+			staging_pos.y += 500
+		
+		# Add first curve
+		for i in range(21):
+			var output = bezier(destination, staging_pos, "up", Vector2.ZERO, i / 20.0)
+			new_path.append(output[0])
+		
+		new_path.append(staging_pos)
+
 	self.path = new_path
-	self.max_speed = 1000
-	
+	self.max_speed = 750
+
 ## Follows the saved path
 func follow_path(delta, max_speed):
 	# Do acceleration
@@ -125,9 +184,17 @@ func follow_path(delta, max_speed):
 	self.global_position += direction * step
 	
 	# Rotation
-	var angle = wrapf(direction.angle() + PI/2 - self.rotation, -PI, PI)
+	# Find if point is in front or behind to determine whether to drive
+	# forwards or backwards
+	var angle = 0
+	if Vector2.UP.rotated(%car.rotation).dot(direction) >= 0:
+		angle = wrapf(direction.angle() + PI/2 - self.rotation, -PI, PI)
+		self.gear = 0
+	else:
+		angle = wrapf(direction.angle() - PI/2 - self.rotation, -PI, PI)
+		self.gear = 2
+		
 	rotation += clamp(angle, -3 * delta, 3 * delta)
-	#self.rotation = direction.angle() + PI/2
 
 	# If lerp is near done, pop
 	if global_position.distance_to(path[path.size() - 1]) <= step:
@@ -139,6 +206,7 @@ func follow_path(delta, max_speed):
 			%view.points = []
 			%spaces.reset()
 			self.max_speed = 5000
+			$"../hmi".reset()
 
 func bezier(source, destination, direction, tangent, x):
 	var midpoint = Vector2.ZERO
@@ -156,3 +224,10 @@ func _on_spaces_execute_park(space):
 	self.build_path(space)
 	%view.build_path(space)
 	
+func _on_sensors_body_entered(body):
+	if body != self and body != $"../boundaries":
+		self.nearby_cars.append(body)
+
+func _on_sensors_body_exited(body):
+	if body != self and body != $"../boundaries":
+		self.nearby_cars.erase(body)
